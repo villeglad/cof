@@ -209,30 +209,63 @@ function bindPopup(l) {
             info += '<tr><td>Latitude </td><td>' + l.feature.geometry.coordinates[1].toFixed(4) + '</td></tr>' +
                     '<tr><td>Longitude</td><td>' + l.feature.geometry.coordinates[0].toFixed(4) + '</td></tr>';
         } else if (l.feature.geometry.type === 'Polygon') {
-          info += '<tr><td>Sq. Meters</td><td>' + (LGeo.area(l)).toFixed(2) + '</td></tr>' +
-                  '<tr><td>Sq. Kilometers</td><td>' + (LGeo.area(l) / 1000000).toFixed(2) + '</td></tr>' +
-                  '<tr><td>Sq. Feet</td><td>' + (LGeo.area(l) / 0.092903).toFixed(2) + '</td></tr>' +
-                  '<tr><td>Acres</td><td>' + (LGeo.area(l) / 4046.86).toFixed(2) + '</td></tr>' +
-                  '<tr><td>Sq. Miles</td><td>' + (LGeo.area(l) / 2589990).toFixed(2) + '</td></tr>';
+          $.ajax({
+            type: 'POST',
+            url: 'https://production-api.globalforestwatch.org/v1/geostore/',
+            crossDomain: true,
+            data: JSON.stringify({geojson: l.feature.geometry}),
+            dataType: 'json',
+            contentType: "application/json; charset=utf-8",
+            async: false,
+            success: function(responseData, textStatus, jqXHR) {
+              $.ajax({
+                type: 'GET',
+                url: 'https://production-api.globalforestwatch.org/v1/umd-loss-gain?geostore=' + responseData.data.id + '&period=2001-01-01%2C2015-12-31&thresh=30',
+                crossDomain: true,
+                async: false,
+                success: function(responseData, textStatus, jqXHR) {
+                  if (Array.isArray(responseData.data)){
+                    responseData = {
+                      data: responseData.data[0]
+                    }; //why????
+                  }
+
+                  var data = {
+                    areaHa: responseData.data.attributes.areaHa,
+                    gain: responseData.data.attributes.gain,
+                    loss: responseData.data.attributes.loss,
+                    treeExtent: responseData.data.attributes.treeExtent
+                  };
+
+                  info += '<tr><td>Area</td><td>' + data.areaHa.toFixed(2) + ' Ha</td></tr>';
+                  info += '<tr><td>Forest cover</td><td>' + data.treeExtent.toFixed(2) + ' Ha</td></tr>';
+                  info += '<tr><td>Forest cover percentage</td><td>' + ((data.treeExtent / data.areaHa) * 100).toFixed(2) + ' %</td></tr>';
+                  info += '<tr><td>Forest cover gain in 15 years</td><td>' + data.gain.toFixed(2) + ' Ha</td></tr>';
+                  info += '<tr><td>Forest cover loss in 15 years</td><td>' + data.loss.toFixed(2) + ' Ha</td></tr>';
+                  info += '<tr><td>Rate of *loss* in forest cover</td><td>' + ((data.loss - data.gain)/15.0).toFixed(2) + ' Ha/yr</td></tr>';
+                }
+              });
+            }
+          });
         }
         info += '</table>';
     }
 
     var tabs = '<div class="pad1 tabs-ui clearfix col12">' +
                     '<div class="tab col12">' +
-                        '<input class="hide" type="radio" id="properties" name="tab-group" checked="true">' +
-                        '<label class="keyline-top keyline-right tab-toggle pad0 pin-bottomleft z10 center col6" for="properties">Properties</label>' +
+                        '<input class="hide" type="radio" id="info" name="tab-group" checked="true">' +
+                        '<label class="keyline-top tab-toggle pad0 pin-bottomleft z10 center col6" for="info">Information</label>' +
+                        '<div class="space-bottom1 col12 content">' +
+                            '<div class="marker-info">' + info + ' </div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="space-bottom2 tab col12">' +
+                        '<input class="hide" type="radio" id="properties" name="tab-group">' +
+                        '<label class="keyline-top keyline-right tab-toggle pad0 pin-bottomright z10 center col6" for="properties">Properties</label>' +
                         '<div class="space-bottom1 col12 content">' +
                             '<table class="space-bottom0 marker-properties">' + table + '</table>' +
                             (writable ? '<div class="add-row-button add fl col3"><span class="icon-plus"> Add row</div>' +
                             '<div class="fl text-right col9"><input type="checkbox" id="show-style" name="show-style" value="true" checked><label for="show-style">Show style properties</label></div>' : '') +
-                        '</div>' +
-                    '</div>' +
-                    '<div class="space-bottom2 tab col12">' +
-                        '<input class="hide" type="radio" id="info" name="tab-group">' +
-                        '<label class="keyline-top tab-toggle pad0 pin-bottomright z10 center col6" for="info">Info</label>' +
-                        '<div class="space-bottom1 col12 content">' +
-                            '<div class="marker-info">' + info + ' </div>' +
                         '</div>' +
                     '</div>' +
                 '</div>';
