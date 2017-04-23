@@ -19,8 +19,8 @@ module.exports = function(context, pane) {
             behavior: table
         }, {
             icon: 'question',
-            title: ' Help',
-            alt: 'Help',
+            title: ' Stats for Humans',
+            alt: 'Stats',
             behavior: help
         }];
 

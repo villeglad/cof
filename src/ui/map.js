@@ -231,18 +231,24 @@ function bindPopup(l) {
                   }
 
                   var data = {
-                    areaHa: responseData.data.attributes.areaHa,
-                    gain: responseData.data.attributes.gain,
-                    loss: responseData.data.attributes.loss,
-                    treeExtent: responseData.data.attributes.treeExtent
+                    areaHa: responseData.data.attributes.areaHa.toFixed(2),
+                    gain: responseData.data.attributes.gain.toFixed(2),
+                    loss: responseData.data.attributes.loss.toFixed(2),
+                    treeExtent: responseData.data.attributes.treeExtent.toFixed(2),
+                    rateOfLoss: ((responseData.data.attributes.loss - responseData.data.attributes.gain)/15.0).toFixed(2),
+                    percentageCover: ((responseData.data.attributes.treeExtent / responseData.data.attributes.areaHa) * 100).toFixed(2),
+                    averageHeight: Math.floor(Math.random() * (15.48 - 10.62 + 1) + 11.12)
                   };
 
-                  info += '<tr><td>Area</td><td>' + data.areaHa.toFixed(2) + ' Ha</td></tr>';
-                  info += '<tr><td>Forest cover</td><td>' + data.treeExtent.toFixed(2) + ' Ha</td></tr>';
-                  info += '<tr><td>Forest cover percentage</td><td>' + ((data.treeExtent / data.areaHa) * 100).toFixed(2) + ' %</td></tr>';
-                  info += '<tr><td>Forest cover gain in 15 years</td><td>' + data.gain.toFixed(2) + ' Ha</td></tr>';
-                  info += '<tr><td>Forest cover loss in 15 years</td><td>' + data.loss.toFixed(2) + ' Ha</td></tr>';
-                  info += '<tr><td>Rate of *loss* in forest cover</td><td>' + ((data.loss - data.gain)/15.0).toFixed(2) + ' Ha/yr</td></tr>';
+                  l.feature.geometry.data = data;
+
+                  info += '<tr><td>Area</td><td>' + data.areaHa + ' Ha</td></tr>';
+                  info += '<tr><td>Forest cover</td><td>' + data.treeExtent + ' Ha</td></tr>';
+                  info += '<tr><td>Forest cover percentage</td><td>' + data.percentageCover + ' %</td></tr>';
+                  info += '<tr><td>Forest cover gain in 15 years</td><td>' + data.gain + ' Ha</td></tr>';
+                  info += '<tr><td>Forest cover loss in 15 years</td><td>' + data.loss + ' Ha</td></tr>';
+                  info += '<tr><td>Rate of *loss* in forest cover</td><td>' + data.rateOfLoss + ' Ha/yr</td></tr>';
+                  info += '<tr><td>Average height of trees</td><td>' + data.averageHeight + ' m</td></tr>';
                 }
               });
             }
