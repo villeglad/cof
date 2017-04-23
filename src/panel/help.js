@@ -76,7 +76,6 @@ module.exports = function(context) {
           }
         }
       });
-
       var ctxValuation = document.getElementById("valuation");
       ctxValuation.innerHTML = (((geojson.treeExtent / 3.14) * geojson.averageHeight * 3.14 * 0.28 * 0.28) * 43.06).toFixed(2);
 
